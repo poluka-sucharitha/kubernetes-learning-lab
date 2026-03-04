@@ -1,0 +1,76 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: complex-cluster
+
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    maxPods: 10
+  - |
+    kind: ClusterConfiguration
+    apiVersion: kubeadm.k8s.io/v1beta3
+    controllerManager:
+      extraArgs:
+        node-cidr-mask-size: "27"
+  extraMounts:
+  - hostPath: /tmp/hostpath
+    containerPath: /tmp/hostpath
+  extraPortMappings:
+  - containerPort: 7071
+    hostPort: 7071
+    protocol: TCP
+
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    maxPods: 10
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    maxPods: 10
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    maxPods: 10
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    maxPods: 10
+
+networking:
+  #podSubnet: "10.244.0.0/24"  # This is like assigning 256 ips to whole cluster, so we can have 256 pods in this cluster because of the /24 subnet mask
+  podSubnet: "10.244.0.0/21" #this is like asssigning 256 ips to each pod, so we can have 1024 pods in this cluster because of the /21 subnet mask
+  serviceSubnet: "10.96.0.0/24"
+
+# Pod subnet defines the total IP range from which all pod IPs in the cluster are allocated
+# Pod subnet and Service subnet must NOT overlap
+
+# | Pod IP                            | Service IP                       |
+# | --------------------------------- | -------------------------------- |
+# | Real IP assigned by CNI           | Virtual IP managed by kube-proxy |
+# | Comes from `podSubnet`            | Comes from `serviceSubnet`       |
+# | Changes when pod restarts         | Stable                           |
+# | Used for pod-to-pod communication | Used for service discovery       |
+
+#/etc/kubernetes/manifests --> default path where kubeadm looks for static pod manifests to create control-plane components (kube-apiserver, kube-controller-manager, kube-scheduler) and etcd. By default, kind mounts this directory from the host into the control-plane nodes, allowing you to customize the control-plane components by placing your own manifest files in that directory on the host.
+
+# commands:
+# 1. kind create cluster --config kind_cluster.yml
+#    kind delete cluster complex-cluster
+# 2. kubectl get nodes -o wide  
+# 3. kubectl get pods -A -o wide
+#    kubectl describe pod <pod_name> -n <Name_space>
+# 4.kubectl create deploy --image=nginx -n <namespace_name> <deployment_name>
+# 5.kubectl delete deploy <deployment_name> -n <namespace_name>
+# 6.kubectl scale deploy nginx --replicas=0 -n <namespace_name>
