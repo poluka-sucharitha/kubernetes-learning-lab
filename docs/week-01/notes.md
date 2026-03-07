@@ -155,5 +155,39 @@ Files located here automatically start control plane components such as:
 - kube-controller-manager
 - etcd
 
+CoreDNS:
+========
 
+CoreDNS is the DNS server used inside Kubernetes clusters for service discovery.
+It allows pods to communicate with services using DNS names instead of IP addresses.
+
+Example:
+If a service named `frontend` exists in namespace `default`,
+pods can access it using:
+
+frontend.default.svc.cluster.local
+
+CoreDNS automatically resolves this DNS name to the Service ClusterIP.
+
+CoreDNS runs as a Deployment in the `kube-system` namespace.
+
+Command to check CoreDNS pods:
+
+kubectl get pods -n kube-system | grep coredns
+
+
+CoreDNS Responsibilities
+-----------------------
+| Function              | Description |
+|-----------------------|-------------|
+| Service Discovery     | Resolves service names to ClusterIP |
+| Internal DNS          | Provides DNS inside the cluster |
+| Pod Communication     | Allows pods to reach services by name |
+| DNS Forwarding        | Forwards external DNS queries to upstream DNS servers |
+
+
+Example Flow
+------------
+
+Pod → DNS Query → CoreDNS → Service IP → kube-proxy → Pod
 
