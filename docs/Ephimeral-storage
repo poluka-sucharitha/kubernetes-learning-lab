@@ -1,0 +1,227 @@
+Ephemeral Storage in Kubernetes
+Overview
+
+Ephemeral storage in Kubernetes is temporary storage used by containers during the lifetime of a Pod.
+
+The data stored in ephemeral storage does not persist.
+If the Pod is deleted, restarted, or rescheduled, the data stored in ephemeral storage is lost.
+
+Ephemeral storage is mainly used for:
+
+Temporary files
+
+Logs
+
+Cache data
+
+Intermediate processing data
+
+Where Ephemeral Storage Exists
+
+Ephemeral storage resides on the node's local disk.
+
+It is consumed by the following components:
+
+Container writable layer
+
+emptyDir volumes
+
+Container logs
+
+Image layers
+
+Node Disk
+│
+├── Container Writable Layer
+├── emptyDir Volumes
+├── Container Logs
+└── Image Layers
+Example Pod Using Ephemeral Storage
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+
+Inside the container, applications may write files to locations such as:
+
+/tmp
+/var/log
+/app/cache
+
+These files are stored in ephemeral storage.
+
+If the Pod restarts, these files will disappear.
+
+emptyDir Volume (Common Ephemeral Storage)
+
+emptyDir is a Kubernetes volume type that provides temporary storage shared between containers in the same Pod.
+
+The volume is created when the Pod starts and deleted when the Pod is removed.
+
+Example
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cache-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - mountPath: /cache
+      name: cache-volume
+
+  volumes:
+  - name: cache-volume
+    emptyDir: {}
+Lifecycle
+Pod Start
+   ↓
+emptyDir Created
+   ↓
+Containers use the volume
+   ↓
+Pod Deleted
+   ↓
+emptyDir Deleted
+Ephemeral Storage Resource Limits
+
+Kubernetes allows defining resource requests and limits for ephemeral storage, similar to CPU and memory.
+
+Example
+resources:
+  requests:
+    ephemeral-storage: "1Gi"
+  limits:
+    ephemeral-storage: "2Gi"
+Meaning
+Resource	Description
+requests	Minimum storage required
+limits	Maximum storage allowed
+
+If a container exceeds the limit:
+
+Pod will be evicted
+Node Disk Pressure
+
+If the node disk becomes full, Kubernetes triggers DiskPressure.
+
+When DiskPressure occurs, Kubernetes starts evicting pods to free disk space.
+
+Check Node Status
+kubectl describe node <node-name>
+
+Example condition:
+
+Conditions:
+DiskPressure = True
+Pod Eviction Priority
+
+When storage runs out, Kubernetes evicts pods in the following order:
+
+Pods exceeding ephemeral-storage limits
+
+BestEffort pods
+
+Burstable pods
+
+Guaranteed pods (last to be evicted)
+
+Pods without defined resource limits are more likely to be evicted.
+
+Checking Ephemeral Storage Usage
+Check pod usage
+kubectl top pod
+Describe pod
+kubectl describe pod <pod-name>
+Check node disk usage
+df -h
+Physical Storage Locations on Node
+
+Ephemeral storage typically resides in the following directories on a node:
+
+/var/lib/containerd
+/var/lib/docker
+/var/lib/kubelet
+/var/log/pods
+
+These directories contain:
+
+Container writable layers
+
+Container logs
+
+Pod temporary data
+
+emptyDir volumes
+
+Ephemeral Storage vs Persistent Storage
+Feature	Ephemeral Storage	Persistent Storage
+Lifetime	Pod lifetime	Independent of Pod
+Data persistence	Lost when Pod stops	Data retained
+Storage location	Node local disk	External storage
+Example	emptyDir	PVC / PV
+
+Examples of persistent storage:
+
+AWS EBS
+
+NFS
+
+Ceph
+
+Azure Disk
+
+Architecture Summary
+Node
+│
+├── kubelet
+│
+├── container runtime
+│
+├── ephemeral storage
+│   ├── container writable layers
+│   ├── logs
+│   ├── emptyDir volumes
+│   └── image layers
+Real World Use Cases
+
+Ephemeral storage is commonly used for:
+
+Application cache
+
+Temporary log buffering
+
+Data processing pipelines
+
+Video processing workloads
+
+Machine learning temporary files
+
+Common Interview Questions
+1. What happens when ephemeral storage is full?
+
+Kubernetes detects DiskPressure on the node and begins evicting pods to free space.
+
+2. What is the difference between ephemeral storage and emptyDir?
+Feature	Ephemeral Storage	emptyDir
+Type	Temporary node storage	Volume type
+Scope	Container writable layer, logs, volumes	Shared pod volume
+Lifecycle	Pod lifetime	Pod lifetime
+3. Where is ephemeral storage located?
+
+Ephemeral storage resides on the node's local disk.
+
+Typical paths include:
+
+/var/lib/containerd
+/var/lib/docker
+/var/log/pods
+/var/lib/kubelet
+Simple Definition
+
+Ephemeral storage is temporary node-local storage used by containers for writable layers, logs, and temporary volumes, and it is deleted when the pod terminates.
