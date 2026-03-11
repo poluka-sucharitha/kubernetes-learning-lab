@@ -1,38 +1,39 @@
-Kubernetes Service → Endpoints → iptables (kube-proxy) Lab
-Objective
+# Kubernetes Service → Endpoints → iptables (kube-proxy) Lab
 
-Understand how Kubernetes Services route traffic to Pods using kube-proxy and iptables.
+## Objective
+
+Understand how **Kubernetes Services route traffic to Pods** using **kube-proxy and iptables**.
 
 This lab demonstrates:
 
-How a Service forwards traffic to Pods
+- How a **Service forwards traffic to Pods**
+- How **Endpoints are created**
+- How **kube-proxy updates iptables rules**
+- How traffic automatically updates when **Pods change**
 
-How Endpoints are created
+---
 
-How kube-proxy updates iptables rules
+# Lab Environment
 
-How traffic automatically updates when Pods change
+Cluster created using **kind**.
 
-Lab Environment
+Check the cluster:
 
-Cluster created using kind.
-
-Check cluster:
-
+```bash
 kind get clusters
 kubectl get nodes
 
 Example output:
 
 NAME                         STATUS   ROLES           AGE
-iptables-lab-control-plane   Ready    control-plane
+iptables-lab-control-plane   Ready    control-plane   5m
 Step 1 — Create Deployment
 
 Create an nginx deployment with 2 replicas.
 
 kubectl create deployment nginx-demo --image=nginx --replicas=2
 
-Check pods:
+Check the pods:
 
 kubectl get pods -o wide
 
@@ -46,11 +47,11 @@ These Pod IPs become Service Endpoints.
 
 Step 2 — Create Service
 
-Expose the deployment as a ClusterIP Service.
+Expose the deployment as a ClusterIP service.
 
 kubectl expose deployment nginx-demo --port=80
 
-Check service:
+Check the service:
 
 kubectl get svc
 
@@ -59,11 +60,11 @@ Example output:
 NAME         TYPE        CLUSTER-IP
 nginx-demo   ClusterIP   10.96.239.59
 
-Now the Service forwards traffic to the nginx pods.
+The Service now routes traffic to the nginx pods.
 
 Step 3 — Observe iptables Rules
 
-Enter the kind node container.
+Enter the kind control-plane node container:
 
 docker exec -it iptables-lab-control-plane sh
 
@@ -92,17 +93,17 @@ The probability rule performs load balancing.
 50% → Pod2
 Step 4 — Delete Pods
 
-Delete the pods:
+Delete all pods:
 
 kubectl delete pods -l app=nginx-demo
 
-Deployment automatically creates new pods.
+The Deployment controller automatically recreates new pods.
 
-Check again:
+Check pods again:
 
 kubectl get pods -o wide
 
-Example output:
+Example:
 
 NAME                        READY   STATUS    IP
 nginx-demo-aaaaa            1/1     Running   10.244.0.14
@@ -112,11 +113,11 @@ Pod IPs changed.
 
 Step 5 — Observe iptables Update
 
-Check iptables again:
+Check iptables rules again:
 
 iptables -t nat -L | grep KUBE-SEP
 
-Example:
+Example output:
 
 /* default/nginx-demo -> 10.244.0.14:80 */
 statistic mode random probability 0.50000000000
@@ -196,7 +197,7 @@ This is iptables-based load balancing.
 
 Production Scenario Simulated
 
-This lab simulates a real production scenario.
+This lab simulates a real production situation.
 
 Pod crash
    ↓
@@ -212,35 +213,35 @@ This demonstrates Kubernetes self-healing networking.
 
 Useful Debug Commands
 
-Check endpoints
+Check endpoints:
 
 kubectl get endpoints nginx-demo
 
-Check EndpointSlices
+Check EndpointSlices:
 
 kubectl get endpointslices
 
-Check kube-proxy logs
+Check kube-proxy logs:
 
 kubectl logs -n kube-system -l k8s-app=kube-proxy
 
-Check iptables rules
+Check service iptables rules:
 
 iptables-save | grep nginx-demo
 Important Production Insight
 
 iptables works well for small clusters.
 
-Large clusters may contain:
+Large clusters may have:
 
 10,000 services
 50,000 pods
 
-iptables rules become very large and slower.
+iptables rules become very large.
 
-Many organizations now use Cilium (eBPF) instead of kube-proxy.
+Many organizations now use Cilium instead of kube-proxy.
 
-Flow with eBPF:
+Instead of iptables:
 
 Service
    ↓
@@ -248,9 +249,9 @@ eBPF map lookup
    ↓
 Pod
 
-This provides faster networking and scalability.
+This provides faster networking.
 
-Kubernetes Debugging & Workload Commands
+Kubernetes Debugging Commands
 Create Deployment
 kubectl create deployment nginx-demo --image=nginx --replicas=2
 
@@ -262,23 +263,15 @@ ReplicaSet
    ↓
 Pods
 
-Use cases:
+Used for stateless applications.
 
-Stateless applications
+Examples:
 
 Web servers
 
 APIs
 
 Microservices
-
-Features:
-
-Self-healing
-
-Scaling
-
-Rolling updates
 
 kubectl run
 
@@ -302,11 +295,11 @@ Debug networking
 
 Test service connectivity
 
-DNS checks
+DNS testing
 
-Example commands:
+Examples:
 
-wget service-name
+wget nginx-demo
 ping pod-ip
 nslookup service-name
 kubectl exec
@@ -321,26 +314,24 @@ kubectl exec -it nginx-demo-abc123 -- sh
 
 Use cases:
 
-Debug application
+Debug applications
 
 Inspect container filesystem
 
-Run troubleshooting commands
+Run diagnostic commands
 
-wget Use Case
+HTTP Testing with wget
 
-Send HTTP requests to services.
-
-Example:
+Send HTTP request to service:
 
 wget -qO- nginx-demo
 
 Explanation:
 
-wget      → HTTP client
--q        → quiet mode
--O-       → print output to terminal
-nginx-demo → Kubernetes service name
+Option	Meaning
+wget	HTTP client
+-q	quiet mode
+-O-	print output to terminal
 
 Traffic flow:
 
@@ -351,19 +342,17 @@ Service IP
 kube-proxy (iptables)
    ↓
 Backend Pod
-ping Use Case
+Network Testing with ping
 
-Check network connectivity.
-
-Example:
+Check connectivity between pods.
 
 ping 10.244.0.5
 
 Used to test:
 
-Pod-to-pod communication
+Pod-to-pod networking
 
-CNI networking
+CNI functionality
 
 Basic connectivity
 
@@ -374,7 +363,7 @@ Pod A
 CNI network
    ↓
 Pod B
-Typical Kubernetes Networking Debug Flow
+Typical Kubernetes Debug Flow
 kubectl run test --image=busybox -it --rm -- sh
         ↓
 Inside debug pod
@@ -385,7 +374,7 @@ wget service-name
 Verify networking and service routing
 Quick Command Summary
 Command	Purpose
-kubectl create deployment	Create managed application workload
+kubectl create deployment	Create application workload
 kubectl run	Create temporary debug pod
 kubectl exec	Run commands inside running container
 wget	Test HTTP connectivity
