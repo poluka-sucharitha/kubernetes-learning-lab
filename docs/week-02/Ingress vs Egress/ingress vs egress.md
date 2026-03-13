@@ -89,3 +89,55 @@ endpointSelector  toEndpoints
 
 Ingress  → controls incoming traffic
 Egress   → controls outgoing traffic
+
+
+# Kubernetes Network Policy – Ingress vs Egress
+
+## Traffic Types Controlled by Network Policies
+
+| Traffic Type | Direction | Controlled By | Example | Explanation |
+|---|---|---|---|---|
+| **Pod → Pod** | Internal cluster traffic | Ingress or Egress | `frontend → backend` | Backend ingress allows frontend |
+| **Pod → External Internet** | Outgoing traffic | Egress | `backend → github.com` | Backend allowed to access external services |
+| **External → Pod** | Incoming traffic | Ingress | `User → frontend` | Internet can reach frontend pod |
+| **Pod → Cluster Services (DNS, API)** | Internal service access | Egress | `pod → CoreDNS` | Pod allowed to resolve DNS |
+| **Pod → Database** | Internal cluster traffic | Egress or Ingress | `backend → database` | Backend allowed to access DB |
+| **Random Pod → Backend** | Internal cluster traffic | Ingress | `random → backend` | Blocked if not allowed in ingress |
+
+---
+
+# Rule Meaning
+
+| Rule Type | Controls | Example |
+|---|---|---|
+| **Ingress** | Who can send traffic **to a pod** | `frontend → backend` |
+| **Egress** | Where a pod can send traffic **from the pod** | `backend → database` |
+
+---
+
+# Direction Visualization
+
+| Flow | Checked Policy |
+|---|---|
+| `frontend → backend` | Backend **Ingress** |
+| `backend → database` | Backend **Egress** |
+| `Internet → frontend` | Frontend **Ingress** |
+| `pod → internet` | Pod **Egress** |
+
+---
+
+# Important Rule
+
+Traffic works only if **both sides allow it**.
+
+| Source | Destination | Result |
+|---|---|---|
+| Egress ✔ | Ingress ✔ | Traffic Allowed |
+| Egress ❌ | Ingress ✔ | Blocked |
+| Egress ✔ | Ingress ❌ | Blocked |
+
+---
+
+# Simple Memory Trick
+Ingress = Incoming traffic to the pod
+Egress = Outgoing traffic from the pod
