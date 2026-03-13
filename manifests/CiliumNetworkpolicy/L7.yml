@@ -1,0 +1,29 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: L7-policy
+  namespace: policy-demo
+spec:
+  endpointSelector:
+    matchLabels:
+      role: backend
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        role: frontend
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      rules:
+        http:
+        - method: GET
+  egressDeny:
+  - toFQDNs:
+    - matchName: "google.com"
+    - matchName: "www.google.com"
+    - matchName: "www.facebook.com" 
+
+
+        
+

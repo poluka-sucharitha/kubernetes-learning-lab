@@ -1,0 +1,24 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: l3-policy
+  namespace: policy-demo
+spec:
+  endpointSelector:
+    matchLabels:
+      role: backend
+
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        role: database
+
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+
+  egressDeny:
+  - toCIDR:
+    - 0.0.0.0/0
+    

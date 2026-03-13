@@ -1,0 +1,14 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy 
+metadata:
+  name: namespace-policy
+  namespace: policy-demo
+spec:
+  endpointSelector:
+  matchLabels:
+    role: backend
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        role: frontend
+        k8s:io.kubernetes.pod.namespace: policy-demo
