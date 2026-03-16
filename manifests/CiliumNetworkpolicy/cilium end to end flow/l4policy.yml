@@ -1,0 +1,22 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: L4-policy
+  namespace: policy-demo 
+spec:
+  endpointSelector:
+    matchLabels:
+      role: backend
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        role: db
+    toPorts:
+    - ports:
+      - port: "3306"
+        protocol: TCP
+        rules:
+          http:
+            - method: GET
+              path: "/api/v1/data"
+
