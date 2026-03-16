@@ -338,3 +338,12 @@ If it fails repeatedly, Kubernetes **restarts the container**.
 
 A **readiness probe** checks if a container is ready to serve traffic.  
 If it fails, the pod is **removed from service endpoints**, so it stops receiving traffic.
+
+
+### Different Types of Probes
+| Probe Type | When Used                   |
+| ---------- | --------------------------- |
+| HTTP       | Web applications            |
+| TCP        | Databases / message brokers |
+| Exec       | Internal health checks      |
+
