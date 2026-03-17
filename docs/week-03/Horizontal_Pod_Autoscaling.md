@@ -648,3 +648,9 @@ spec:
 
 ```
 ```
+
+Even without HPA, resource requests and limits are CRITICAL for:
+1. Proper scheduling
+2. Preventing node overload
+3. Fair resource sharing
+4. Cluster stability
