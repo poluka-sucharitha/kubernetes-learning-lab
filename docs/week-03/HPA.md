@@ -1,29 +1,28 @@
+````md
 # Kubernetes Horizontal Pod Autoscaling (HPA)
 
----
-
-# Overview
+## Overview
 
 **Horizontal Pod Autoscaling (HPA)** in Kubernetes automatically adjusts the number of Pod replicas for a workload based on observed demand.
 
 It commonly works with scalable resources such as:
 
-- Deployment  
-- StatefulSet  
-- ReplicaSet  
+- Deployment
+- StatefulSet
+- ReplicaSet
 
 It does **not** work for objects that cannot be scaled, such as:
 
-- DaemonSet  
+- DaemonSet
 
 ---
 
-# What “Horizontal” Means
+## What “Horizontal” Means
 
 Horizontal scaling means:
 
-- **Adding more Pods** when load increases  
-- **Removing Pods** when load decreases  
+- **Adding more Pods** when load increases
+- **Removing Pods** when load decreases
 
 This is different from **vertical scaling**, which means:
 
@@ -31,134 +30,151 @@ This is different from **vertical scaling**, which means:
 
 ---
 
-# Why HPA is Used
+## Why HPA is Used
 
 HPA helps you:
 
-- Handle variable traffic automatically  
-- Improve application availability under load  
-- Reduce manual scaling effort  
-- Save resources by scaling down when load drops  
+- Handle variable traffic automatically
+- Improve application availability under load
+- Reduce manual scaling effort
+- Save resources by scaling down when load drops
 
 ---
 
-# What HPA Controls
+## What HPA Controls
 
 HPA is:
 
-1. A **Kubernetes API resource**  
-2. A **controller** running in the control plane  
+1. A **Kubernetes API resource**
+2. A **controller** running in the control plane
 
 The controller checks metrics periodically and updates the replica count of the target workload.
 
 ---
 
-# How HPA Works
+## How HPA Works
 
 HPA works as a **control loop**.
 
-- Runs periodically (default **15 seconds**)  
-- Controlled by:
+- The controller checks metrics at regular intervals
+- Default sync period is **15 seconds**
+- This interval is controlled by:
 
 ```text
 --horizontal-pod-autoscaler-sync-period
-Flow
+````
 
-Reads target from scaleTargetRef
+During each cycle, Kubernetes:
 
-Selects Pods using labels
+* Reads the target workload from `scaleTargetRef`
+* Finds the Pods belonging to that workload using label selectors
+* Fetches metrics
+* Compares current metric values with desired target values
+* Decides whether to scale up, scale down, or do nothing
 
-Fetches metrics
+---
 
-Compares current vs desired
+## Common Metrics Used by HPA
 
-Decides scale up/down
+HPA can scale based on:
 
-Common Metrics Used by HPA
+* CPU utilization
+* Memory utilization
+* Custom metrics
+* External metrics
+* Container-specific resource metrics
+* Multiple metrics together
 
-CPU utilization
+---
 
-Memory utilization
+## Metrics Sources Used by HPA
 
-Custom metrics
+HPA reads metrics from aggregated APIs such as:
 
-External metrics
+* `metrics.k8s.io`
+* `custom.metrics.k8s.io`
+* `external.metrics.k8s.io`
 
-Container metrics
+### Usually required components
 
-Multiple metrics
+* Metrics Server (for CPU and memory)
+* Custom metrics adapter (for custom or external metrics)
 
-Metrics Sources
+---
 
-metrics.k8s.io → CPU/Memory
+## HPA Scaling Formula
 
-custom.metrics.k8s.io
+At a basic level, HPA calculates desired replicas using this formula:
 
-external.metrics.k8s.io
-
-Required Components
-
-Metrics Server
-
-Metrics adapters
-
-HPA Scaling Formula
+```text
 desiredReplicas = ceil(currentReplicas × currentMetricValue / desiredMetricValue)
-Example (Scale Up)
+```
 
-current = 2
+### Example 1: Scale Up
 
-CPU = 200m
+* Current replicas = 2
+* Current CPU = 200m
+* Desired CPU = 100m
 
-target = 100m
+```text
+desiredReplicas = ceil(2 × 200 / 100)
+                = ceil(4)
+                = 4
+```
 
-2 × (200/100) = 4
+Kubernetes scales from 2 Pods to 4 Pods.
 
-➡️ Pods: 2 → 4
+---
 
-Example (Scale Down)
+### Example 2: Scale Down
 
-current = 4
+* Current replicas = 4
+* Current CPU = 50m
+* Desired CPU = 100m
 
-CPU = 50m
+```text
+desiredReplicas = ceil(4 × 50 / 100)
+                = ceil(2)
+                = 2
+```
 
-target = 100m
+Kubernetes scales from 4 Pods to 2 Pods.
 
-4 × (50/100) = 2
+---
 
-➡️ Pods: 4 → 2
+## Tolerance
 
-Tolerance (VERY IMPORTANT)
+HPA does not scale for tiny fluctuations near the target.
 
-Default tolerance = 10%
+* Default tolerance: **10% (0.1)**
 
-HPA checks:
+This avoids unnecessary scaling caused by small metric changes.
 
-ratio = current / desired
+---
 
-If:
+## Important Requirement for CPU/Memory Based HPA
 
-0.9 < ratio < 1.1 → NO scaling
-Key Idea
+For HPA to work correctly with CPU or memory utilization:
 
-Formula → calculates replicas
+**Resource requests must be set**
 
-Tolerance → decides whether to scale
-
-Requirement for CPU/Memory HPA
-
-You MUST define:
-
+```yaml
 resources:
   requests:
     cpu: "200m"
     memory: "256Mi"
+```
 
-Otherwise:
+Without resource requests:
 
-HPA cannot calculate utilization properly
+* CPU utilization cannot be calculated properly
+* HPA may not take action
 
-Example HPA
+---
+
+## Example HPA Using CPU
+
+```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -177,10 +193,38 @@ spec:
       target:
         type: Utilization
         averageUtilization: 60
-Container Resource Metrics
+```
 
-Scale based on specific container:
+### Meaning
 
+* Target workload: `my-app` Deployment
+* Minimum Pods: 2
+* Maximum Pods: 10
+* Maintain ~60% average CPU usage
+
+---
+
+## Resource Metrics (CPU/Memory)
+
+```yaml
+type: Resource
+resource:
+  name: cpu
+  target:
+    type: Utilization
+    averageUtilization: 60
+```
+
+* HPA keeps average CPU utilization at 60% across Pods
+* Pod-level usage = sum of all container usage in the Pod
+
+⚠️ One overloaded container may be hidden if others are idle.
+
+---
+
+## Container Resource Metrics
+
+```yaml
 type: ContainerResource
 containerResource:
   name: cpu
@@ -188,236 +232,358 @@ containerResource:
   target:
     type: Utilization
     averageUtilization: 60
-Custom & External Metrics
+```
+
+* Tracks only the specified container
+* Ignores sidecars
+
+---
+
+## Scaling on Custom Metrics
 
 Examples:
 
-Requests/sec
+* Requests per second
+* Queue length
+* Active sessions
 
-Queue size
+Requires:
 
-External system load
+* `autoscaling/v2`
+* Custom metrics API
+* Metrics adapter
 
-Multiple Metrics
+---
+
+## Scaling on External Metrics
+
+Examples:
+
+* Cloud queue size
+* Third-party monitoring data
+
+Requires:
+
+* `external.metrics.k8s.io`
+* External metrics adapter
+
+---
+
+## Scaling on Multiple Metrics
 
 HPA:
 
-Calculates replicas for each metric
+* Calculates desired replicas for each metric
+* Chooses the **highest** value
 
-Chooses highest value
+---
 
-Pod Readiness & HPA
+## Pod Readiness and HPA
 
-HPA considers:
+HPA ignores or handles carefully:
 
-Only Ready pods
+* Failed Pods
+* Deleting Pods
+* Not Ready Pods
+* Pods with missing metrics
 
-Ignores:
+---
 
-Failed pods
+## Startup Behavior
 
-Deleting pods
+New Pods often show temporary spikes:
 
-Startup Problem
+* JVM warm-up
+* Cache loading
+* Initialization
 
-Apps may show high CPU at startup.
+### HPA avoids reacting too early
 
-If not handled:
+---
 
-❌ HPA over-scales
+### Key Settings
 
-Solution
+#### CPU Initialization Period
 
-Use:
+* Default: **5 minutes**
+* Ignores early CPU spikes
 
-startupProbe:
-readinessProbe:
-HPA Startup Settings
-CPU Initialization Period
---horizontal-pod-autoscaler-cpu-initialization-period (5 min)
-Initial Readiness Delay
---horizontal-pod-autoscaler-initial-readiness-delay (30 sec)
-Missing Metrics Handling
+#### Initial Readiness Delay
 
-If metrics missing:
+* Default: **30 seconds**
+* Treats unstable Pods as initializing
 
-Scale DOWN → assume 100% usage
+---
 
-Scale UP → assume 0% usage
+### Best Practices
 
-Stabilization (VERY IMPORTANT)
+* Use `startupProbe`
+* Use `readinessProbe`
+* Set proper delays
 
-Prevents:
+---
 
-Flapping
+## Missing Metrics Handling
 
-Frequent scaling
+* During **scale down** → assume 100% usage
+* During **scale up** → assume 0% usage
 
-Downscale Stabilization Window
+---
 
-Default:
+## Stabilization (Avoid Flapping)
 
-5 minutes
+### Downscale Stabilization Window
 
-Behavior:
+* Default: **5 minutes**
 
-➡️ HPA remembers past recommendations
-➡️ Picks highest value
-➡️ Delays scaling down
+```text
+--horizontal-pod-autoscaler-downscale-stabilization
+```
 
-Scaling Behavior (autoscaling/v2)
+Prevents rapid scale down.
+
+---
+
+## Configurable Scaling Behavior
+
+```yaml
 behavior:
-Scaling Policies
+```
 
-Control speed of scaling.
+### Example
 
-Example (Scale Down)
+```yaml
 behavior:
   scaleDown:
     policies:
+    - type: Pods
+      value: 4
+      periodSeconds: 60
     - type: Percent
       value: 10
       periodSeconds: 60
-    - type: Pods
-      value: 5
-      periodSeconds: 60
-    selectPolicy: Min
-Meaning
+```
 
-Remove 10% OR 5 pods
+---
 
-Choose smaller (Min)
+### selectPolicy Options
 
-Combined Behavior (VERY IMPORTANT)
-1. Stabilization → WHEN to scale
-2. Policies → HOW MUCH to scale
-Real Flow
+* `Max` → largest change
+* `Min` → smallest change
+* `Disabled` → disable scaling
 
-Initial pods = 10
+---
 
-Metrics drop:
+### Example: Conservative Scale Down
 
-Wait 5 min (stabilization)
+```yaml
+selectPolicy: Min
+```
 
-Then:
+---
 
-10 → 9 → 8 → 7 → 6
+### Example: Disable Scale Down
 
-NOT:
+```yaml
+behavior:
+  scaleDown:
+    selectPolicy: Disabled
+```
 
-10 → 6 ❌
-Key Understanding
-Component	Role
-Stabilization	delay
-Policies	speed
-selectPolicy	safety
-Scale Up Behavior
+---
+
+### Custom Stabilization Window
+
+```yaml
+stabilizationWindowSeconds: 60
+```
+
+---
+
+### Tolerance Example
+
+```yaml
 scaleUp:
-  stabilizationWindowSeconds: 0
-  policies:
-  - type: Percent
-    value: 100
-  - type: Pods
-    value: 4
-  selectPolicy: Max
-Meaning
+  tolerance: 0.05
+```
 
-Scale immediately
+---
 
-Either:
+## Default Behavior (Simplified)
 
-double pods
+```yaml
+behavior:
+  scaleDown:
+    stabilizationWindowSeconds: 300
+  scaleUp:
+    stabilizationWindowSeconds: 0
+```
 
-or add 4 pods
+* Fast scale up
+* Slow scale down
 
-Choose larger
+---
 
-Scale Up vs Scale Down
-Type	Behavior
-Scale Up	Fast 🚀
-Scale Down	Slow 🧠
-Rolling Updates + HPA
+## HPA During Rolling Updates
 
-HPA → controls Deployment
+* HPA updates Deployment replicas
+* Deployment distributes Pods across ReplicaSets
 
-Deployment → controls ReplicaSet
+Hierarchy:
 
-ReplicaSet → controls Pods
+```text
+HPA → Deployment → ReplicaSet → Pods
+```
 
-Important Rule
+---
 
-Remove:
+## Supported Workloads
 
+Supported:
+
+* Deployment
+* StatefulSet
+* ReplicaSet
+
+Not supported:
+
+* DaemonSet
+
+---
+
+## Maintenance Mode
+
+If:
+
+* Replicas manually set to 0
+
+HPA effectively pauses.
+
+---
+
+## Important: Avoid `spec.replicas`
+
+Remove from Deployment manifest when using HPA:
+
+```yaml
 spec:
   replicas:
+```
 
 Otherwise:
 
-❌ Conflicts with HPA
+* `kubectl apply` may override HPA decisions
 
-kubectl Commands
+---
+
+## kubectl Commands
+
+```bash
+kubectl apply -f hpa.yaml
 kubectl get hpa
 kubectl describe hpa
 kubectl delete hpa <name>
-kubectl autoscale deployment my-app --min=2 --max=5 --cpu-percent=80
-End-to-End Flow
-Metrics → HPA → Deployment → ReplicaSet → Pods
-Best Practices
+```
 
-Set resource requests
+---
 
-Install Metrics Server
+### Quick Creation
 
-Use autoscaling/v2
+```bash
+kubectl autoscale rs foo --min=2 --max=5 --cpu-percent=80
+```
 
-Configure probes
+---
 
-Avoid flapping
+## End-to-End Flow
 
-Remove static replicas
+1. Application runs in Pods
+2. Metrics Server provides metrics
+3. HPA reads metrics
+4. HPA calculates desired replicas
+5. Workload replica count updated
+6. Pods added/removed
 
-Set proper min/max
+---
 
-Limitations
+## Real-World Example
 
-Needs metrics APIs
+* minReplicas: 2
+* maxReplicas: 10
+* CPU target: 60%
 
-CPU requires requests
+### High Load
 
-Not continuous (runs every 15s)
+* CPU → 85%
+* Scale up (e.g., 2 → 4)
 
-Not for DaemonSet
+### Low Load
 
-Short Summary
+* CPU → 20%
+* Gradual scale down
 
-HPA:
+---
 
-Auto scales Pods
+## Best Practices
 
-Uses metrics
+1. Set resource requests
+2. Install Metrics Server
+3. Use `autoscaling/v2`
+4. Configure probes properly
+5. Avoid flapping
+6. Remove static replicas
+7. Set sensible min/max
 
-Prevents overload
+---
 
-Saves resources
+## Limitations
 
-Supports advanced tuning
+* Requires metrics APIs
+* CPU scaling needs requests
+* Not continuous (periodic loop)
+* Missing metrics affect decisions
+* Pod averages can hide container issues
+* Does not support DaemonSet
 
-Interview Key Points
+---
 
-HPA = auto scaling of Pods
+## Short Summary
 
-Uses CPU, memory, custom metrics
+* HPA = automatic Pod scaling
+* Horizontal = add/remove Pods
+* Uses CPU, memory, custom, external metrics
+* Requires metrics + resource requests
+* Prevents flapping with stabilization
 
-Default sync = 15s
+---
 
-Uses formula + tolerance
+## Interview Key Points
 
-Multiple metrics → max wins
+**What is HPA?**
+Automatically scales Pods based on metrics.
 
-Stabilization prevents flapping
+**What metrics are supported?**
+CPU, memory, custom, external, container, multi-metric.
 
-Minimal Example
-Deployment
+**Why CPU requests matter?**
+Utilization is based on requested CPU.
+
+**Does HPA run continuously?**
+No, every ~15 seconds.
+
+**Does it support DaemonSet?**
+No.
+
+**Multiple metrics behavior?**
+Chooses highest replica count.
+
+---
+
+## Minimal Example
+
+### Deployment
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -437,7 +603,13 @@ spec:
         resources:
           requests:
             cpu: 200m
-HPA
+```
+
+---
+
+### HPA
+
+```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -456,18 +628,23 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
-One-Line Revision
+```
 
-HPA = auto Pod scaling
+---
 
-Horizontal = more pods
+## One-Line Revision Notes
 
-Vertical = more resources
+* HPA = automatic Pod scaling
+* Horizontal = more/fewer Pods
+* Vertical = bigger Pods
+* Works on Deployment/StatefulSet
+* Needs metrics
+* CPU scaling requires requests
+* Sync period = 15s
+* Uses scaling formula
+* Supports multiple metrics
+* Prevents flapping
+* Use `autoscaling/v2`
 
-Needs metrics + requests
-
-Uses formula + tolerance
-
-Scale up fast, down slow
-
-Stabilization avoids flapping
+```
+```
