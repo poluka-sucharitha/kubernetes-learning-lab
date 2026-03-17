@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: execprobe
+  namespace: probe-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox-probe
+  template:
+    metadata:
+      labels:
+        app: busybox-probe
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ["sh", "-c", "touch /tmp/healthy && sleep 3600"]
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+
+# commands to apply the manifest
+# kubectl apply -f execprobe.yml
+# kubectl get pods -n probe-ns -w
+# kubectl exec -it -n probe-ns <pod-name> -- sh
+# rm -f /tmp/healthy
+# exit
+# kubectl describe pod -n probe-ns <pod-name>

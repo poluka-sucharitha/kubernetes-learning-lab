@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readinessprobe
+  namespace: probe-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-probe
+  template:
+    metadata:
+      labels:
+        app: nginx-probe
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
+
+# commands to apply the manifest
+# #kubectl apply -f readinessprobe.yml
+# kubectl get pods -n probe-ns
+# kubectl exec -it -n probe-ns <pod-name> -- sh
+# rm -f /usr/share/nginx/html/index.html
+# exit
+# kubectl describe pod -n probe-ns <pod-name>
