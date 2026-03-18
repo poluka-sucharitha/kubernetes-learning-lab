@@ -1,0 +1,198 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpa-deployment
+  namespace: hpa-practice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hpa-app
+  template:
+    metadata:
+      labels:
+        app: hpa-app
+    spec:
+      containers:
+        - name: hpa-container
+          image: nginx
+          ports:
+            - containerPort: 80
+
+          # Readiness probe checks whether the container is ready
+          # to receive traffic from the Service.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Liveness probe checks whether the container is still healthy.
+          # If it fails continuously, Kubernetes restarts the container.
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+          # Resource requests are used by the scheduler and by HPA
+          # when calculating utilization percentages.
+          # Resource limits define the maximum resources the container can use.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hpa-service
+  namespace: hpa-practice
+spec:
+  selector:
+    app: hpa-app
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-autoscaler
+  namespace: hpa-practice
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hpa-deployment
+
+  # HPA will never scale below 1 pod or above 5 pods.
+  minReplicas: 1
+  maxReplicas: 5
+
+  metrics:
+    # Scale based on average CPU utilization.
+    # Target is 50% of the requested CPU (100m), which means 50m average CPU usage per pod.
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+
+    # Scale based on average memory utilization.
+    # Target is 50% of the requested memory (128Mi), which means 64Mi average memory usage per pod.
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+
+  behavior:
+    scaleUp:
+      # No delay before allowing scale-up decisions.
+      stabilizationWindowSeconds: 0
+
+      # If multiple scale-up policies apply, choose the one that allows the largest increase.
+      selectPolicy: Max
+
+      policies:
+        # Allow adding up to 2 pods within 60 seconds.
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+
+        # Allow increasing replicas by up to 100% within 60 seconds.
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+
+    scaleDown:
+      # No stabilization delay before scaling down.
+      stabilizationWindowSeconds: 0
+
+      # If multiple scale-down policies apply, choose the one that removes the fewest pods.
+      selectPolicy: Min
+
+      policies:
+        # Allow removing up to 1 pod within 15 seconds.
+        - type: Pods
+          value: 1
+          periodSeconds: 15
+
+        # Allow reducing replicas by up to 50% within 15 seconds.
+        - type: Percent
+          value: 50
+          periodSeconds: 15
+
+# -------------------------------------------------------
+# Commands to generate load and observe HPA scaling:
+#
+# 1. Create a temporary BusyBox pod:
+#    kubectl run <test-pod-name> -n <namespace-name> --image=busybox -it --rm -- /bin/sh
+#
+# 2. Generate continuous traffic to the Service:
+#    while true; do wget -q -O- http://<service-name>; done
+# -------------------------------------------------------
+
+# HPA tries to maintain average CPU and memory usage at 50%
+# of the requested values defined in the Deployment.
+#
+# If actual usage goes above the target, HPA increases the number of replicas.
+# If usage goes below the target, HPA decreases the number of replicas.
+#
+# Scaling always stays within:
+#   minReplicas = 1
+#   maxReplicas = 5
+
+# -------------------------------------------------------
+# HPA scaling logic:
+#
+# desiredReplicas = currentReplicas × (currentMetricValue / targetMetricValue)
+#
+# Example:
+# If CPU or memory utilization is higher than 50%,
+# HPA calculates a higher desired replica count.
+#
+# If multiple metrics are configured, HPA compares all recommendations
+# and uses the highest recommended replica count.
+# -------------------------------------------------------
+
+# -------------------------------------------------------
+# Important understanding:
+#
+# 1. HPA checks metrics periodically.
+#    By default, the controller sync period is about 15 seconds.
+#
+# 2. averageUtilization: 50 means:
+#    HPA compares current usage against 50% of the resource request.
+#
+# 3. If current utilization is above target:
+#    HPA calculates more replicas.
+#
+# 4. If current utilization is below target:
+#    HPA calculates fewer replicas.
+#
+# 5. behavior controls how quickly scale-up and scale-down can happen.
+#
+# 6. minReplicas and maxReplicas do NOT decide when scaling starts.
+#    They only define the lower and upper scaling boundaries.
+# -------------------------------------------------------
+
+# Quick reference:
+#
+# | Concept                  | Meaning                                  |
+# | ------------------------ | ---------------------------------------- |
+# | minReplicas              | Minimum number of pods HPA can keep      |
+# | maxReplicas              | Maximum number of pods HPA can keep      |
+# | value: 2 (Pods policy)   | Maximum pods that can be added at once   |
+# | value: 100 (Percent)     | Maximum percentage increase allowed      |
+# | behavior                 | Controls scaling speed and limits        |
