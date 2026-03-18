@@ -649,8 +649,17 @@ spec:
 ```
 ```
 
-Even without HPA, resource requests and limits are CRITICAL for:
+Note:
+=====
+**Even without HPA, resource requests and limits are CRITICAL for:**
 1. Proper scheduling
 2. Preventing node overload
 3. Fair resource sharing
 4. Cluster stability
+
+
+Note:
+=====
+The HPA controller **runs periodically (default 15 seconds)** and calculates desired replicas using the formula:
+**desiredReplicas = ceil(currentReplicas × currentMetric / targetMetric),**
+where for CPU it uses average utilization across pods compared to the target utilization.
