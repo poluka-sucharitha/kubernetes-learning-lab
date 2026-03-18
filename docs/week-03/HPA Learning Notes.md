@@ -1,4 +1,3 @@
-```md
 # 📘 HPA Learning Notes (From This Conversation)
 
 ## 1. Types of HPA Metrics
@@ -209,4 +208,3 @@ min/max → define "allowed range"
 ## 🚀 One-Line Summary
 
 > HPA scales pods based on resource usage relative to requests, calculates desired replicas using a formula, and then applies behavior rules to control how fast scaling happens within defined min/max limits.
-```
