@@ -26,14 +26,16 @@
 
 ## 3. HPA Uses Requests (NOT Limits)
 - `averageUtilization` is calculated based on **requests**
-- Example:
-  - CPU request = `100m`
-  - Target = `50%`
-  - → Target usage = `50m`
+
+### Example
+- CPU request = `100m`
+- Target = `50%`
+- → Target usage = `50m`
 
 ---
 
 ## 4. HPA Formula
+
 ```
 
 desiredReplicas = ceil(currentReplicas × currentMetric / targetMetric)
@@ -49,7 +51,7 @@ desiredReplicas = ceil(currentReplicas × currentMetric / targetMetric)
 - HPA calculates desired replicas for each metric separately
 - Picks the **highest value**
 
-Example:
+### Example
 - CPU → 2 pods
 - Memory → 4 pods  
 → Final = **4 pods**
@@ -66,9 +68,9 @@ maxReplicas → maximum pods allowed
 
 ```
 
-- Example:
-  - Desired = 8, max = 5 → final = 5
-  - Desired = 0, min = 1 → final = 1
+### Example
+- Desired = 8, max = 5 → final = 5
+- Desired = 0, min = 1 → final = 1
 
 ---
 
@@ -127,7 +129,7 @@ New = current × (1 - %)
 
 ```
 
-Example:
+### Example
 - 100% of 2 → 4
 - 50% of 4 → 6
 - 25% of 8 → 6
@@ -145,14 +147,13 @@ Example:
 ---
 
 ## 12. periodSeconds
-
 - Defines **time window**
 - Scaling allowed within that window
 
 ### Key Concept
 > HPA applies scaling in **one jump**, not step-by-step
 
-Example:
+### Example
 ```
 
 4 → 6 in 15 seconds (NOT 4 → 5 → 6)
@@ -162,7 +163,6 @@ Example:
 ---
 
 ## 13. stabilizationWindowSeconds
-
 - Prevents rapid scaling changes (flapping)
 
 ### Default
