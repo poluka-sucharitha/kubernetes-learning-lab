@@ -16,7 +16,7 @@ That means:
 - when the Pod is deleted, the volume is also deleted
 - the data is generally **not meant to survive Pod deletion**
 
-So this type of storage is useful when your application needs some temporary storage, but does **not need long-term persistence**. :contentReference[oaicite:1]{index=1}
+So this type of storage is useful when your application needs some temporary storage, but does **not need long-term persistence**. :contentReference
 
 ---
 
@@ -29,7 +29,7 @@ Some applications need storage, but only temporarily. For example:
 - secrets or configuration files mounted into the Pod
 - read-only runtime input files
 
-In these cases, creating a full persistent storage setup is unnecessary. Ephemeral volumes make this simpler because the storage is tied directly to the Pod lifecycle. :contentReference[oaicite:2]{index=2}
+In these cases, creating a full persistent storage setup is unnecessary. Ephemeral volumes make this simpler because the storage is tied directly to the Pod lifecycle. 
 
 ---
 
@@ -62,7 +62,7 @@ Ephemeral volumes are for:
 - caches
 - injected runtime data
 
-They are **not** for databases, uploads that must survive, or business-critical data. :contentReference[oaicite:3]{index=3}
+They are **not** for databases, uploads that must survive, or business-critical data.
 
 ---
 
@@ -92,7 +92,7 @@ In Kubernetes, the storage is considered ephemeral because:
 - it follows the Pod lifecycle
 - it goes away when the Pod goes away
 
-So the storage is not independent like a normal persistent volume. :contentReference[oaicite:4]{index=4}
+So the storage is not independent like a normal persistent volume. :contentReference
 
 ---
 
@@ -135,7 +135,7 @@ That means you don’t always need to separately create:
 
 for some types of ephemeral storage.
 
-This makes deployment easier because the Pod definition itself contains the storage definition. :contentReference[oaicite:5]{index=5}
+This makes deployment easier because the Pod definition itself contains the storage definition. :
 
 ---
 
@@ -186,7 +186,7 @@ But “simple YAML” should not make you forget operational concerns like:
 
 # 4. Main types of ephemeral volumes
 
-Kubernetes supports multiple kinds of ephemeral volumes for different use cases. The file lists these main types: :contentReference[oaicite:6]{index=6}
+Kubernetes supports multiple kinds of ephemeral volumes for different use cases. The file lists these main types: 
 
 - `emptyDir`
 - `configMap`
@@ -211,7 +211,7 @@ Its storage comes from:
 - the node’s local disk, or
 - RAM, depending on configuration
 
-It exists only while the Pod exists. :contentReference[oaicite:7]{index=7}
+It exists only while the Pod exists.
 
 ---
 
@@ -253,7 +253,7 @@ Be careful because heavy usage of `emptyDir` can consume node storage and contri
 
 # 6. `configMap`, `secret`, and `downwardAPI`
 
-These are also listed as ephemeral-style volume sources. :contentReference[oaicite:8]{index=8}
+These are also listed as ephemeral-style volume sources.
 
 ---
 
@@ -379,7 +379,7 @@ Useful for:
 
 ## Simple explanation
 
-The file mentions `image` as a volume type that allows mounting container image files or artifacts directly into a Pod. :contentReference[oaicite:9]{index=9}
+The file mentions `image` as a volume type that allows mounting container image files or artifacts directly into a Pod.
 
 This means image-provided artifacts can be exposed to the Pod as mounted data.
 
@@ -412,7 +412,7 @@ A **CSI ephemeral volume** is an ephemeral volume provided by a **CSI driver**.
 
 CSI stands for **Container Storage Interface**.
 
-This means Kubernetes itself is not directly creating/managing the storage logic. Instead, a CSI storage driver provides the storage for the Pod. :contentReference[oaicite:10]{index=10}
+This means Kubernetes itself is not directly creating/managing the storage logic. Instead, a CSI storage driver provides the storage for the Pod.
 
 ---
 
@@ -424,7 +424,7 @@ These are conceptually similar to:
 - `secret`
 - `downwardAPI`
 
-because they are created with the Pod and tied to node-local Pod startup behavior. But unlike native built-in types, they depend on CSI drivers. :contentReference[oaicite:11]{index=11}
+because they are created with the Pod and tied to node-local Pod startup behavior. But unlike native built-in types, they depend on CSI drivers.
 
 ---
 
