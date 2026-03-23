@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+  labels:
+    app: nginx-pod
+spec:
+  containers:
+  - name: myapp
+    image: nginx:latest
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - name: mypvc
+        mountPath: /data
+
+  volumes:
+  - name: mypvc
+    persistentVolumeClaim:
+      claimName: mypvc
+
+
+
+###commands to test the above manifest: ###
+#===========================================#
+# kubectl apply -f pvc-pod.yml
+
+# kubectl get pvc
+# kubectl get pods
+# kubectl get pv
+
+# kubectl describe pvc mypvc
+# kubectl describe pod myapp
+
+# kubectl get sc
+# kubectl describe sc standard
+
+# kubectl get configmap -n local-path-storage local-path-config -o yaml
+
+# kubectl exec -it myapp -- sh
+# cd /data
+# echo "Hello World" > test.txt
+# cat test.txt
+# ls -al /data
+# exit
+
+# kubectl get pod myapp -o wide
+
+# kubectl get pvc mypvc -o jsonpath='{.spec.volumeName}'
+# echo
+
+# kubectl get pod myapp -o jsonpath='{.spec.nodeName}'
+# echo
+
+# docker ps
+
+# docker exec -it <worker-container-id> bash
+
+# cd /var/local-path-provisioner
+# ls -al
+
+# cd /var/local-path-provisioner/<pvc-folder-name>
+# ls -al
+# cat test.txt
+
+# exit
+
+# kubectl delete pod myapp
+
+# kubectl apply -f pvc-pod.yml
+
+# kubectl get pods
+
+# kubectl exec -it myapp -- cat /data/test.txt
+
+# kubectl delete -f pvc-pod.yml
+
+# kubectl get pods
+# kubectl get pvc
+# kubectl get pv
+
+# docker exec -it <worker-container-id> bash
+# cd /var/local-path-provisioner
+# ls -al
+# exit

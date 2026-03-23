@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mypv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: /mnt/data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-deployment
+  template:
+    metadata:
+      labels:
+        app: nginx-deployment
+    spec:
+      containers:
+      - name: myapp
+        image: nginx:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: mypvc
+            mountPath: /data
+
+      volumes:
+      - name: mypvc
+        persistentVolumeClaim:
+          claimName: mypvc
+
+
+#NOTE:# The above manifest creates a PersistentVolume (PV) with a hostPath, a PersistentVolumeClaim (PVC) that requests storage from the PV, and a Deployment that uses the PVC to mount storage into the nginx container. The ReclaimPolicy is set to Delete, which means that when the PVC is deleted, the PV will also be deleted. However, since this PV uses hostPath, only the PV object will be deleted, and the actual data on the node will remain intact.
+#=====
+#ReclaimPolicy=Delete deletes the underlying storage only if it is managed by a provisioner (like EBS/CSI). For hostPath, it deletes only the PV object, not the actual data on the node.
