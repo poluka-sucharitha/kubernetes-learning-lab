@@ -56,3 +56,20 @@ spec:
 # -> if we delete pvc  then pv will not get deleted because of reclaim policy set to ""retain""" in storage class
 #  in this case pvc gets deleted only when pod is deleted and pv will be in released state and we can reuse that pv 
 #  by creating new pvc with same name as pv name and it will get bound to that pv and we can use that pv again.
+
+# we use ebs csi driver only for EKS cluster and for on prem cluster we can use hostpath csi driver or local csi driver.
+
+
+###commands to test the above manifest: ###
+#===========================================#
+# kubectl apply -f csi-hostpath-pvc-deployment.yml
+# kubectl get pvc
+# kubectl get pv
+# kubectl describe pvc mypvc
+# kubectl describe pv csi-hostpath-mypvc
+# kubectl get sc
+# kubectl describe sc csi-hostpath
+# kubectl exec -it <pod-name> -- sh
+# cd /data
+# echo "Hello World" > test.txt
+# cat test.txt
