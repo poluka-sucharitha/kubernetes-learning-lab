@@ -43,10 +43,10 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         volumeMounts:
-        - name: mypvc
+        - name: mypv
           mountPath: /data
       volumes:
-      - name: mypvc
+      - name: mypv
         persistentVolumeClaim:
           claimName: mypvc
 
