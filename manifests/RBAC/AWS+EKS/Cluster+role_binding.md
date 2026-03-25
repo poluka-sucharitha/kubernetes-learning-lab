@@ -303,6 +303,16 @@ RBAC → Authorization
 
 ---
 
+
+| Component    | Purpose              |
+| ------------ | -------------------- |
+| IAM          | Identity             |
+| kubeconfig   | Login setup          |
+| Access Entry | Mapping              |
+| EKS Policy   | Broad permissions    |
+| RBAC         | Fine-grained control |
+
+
 # 🚀 Final Summary
 
 ```text
