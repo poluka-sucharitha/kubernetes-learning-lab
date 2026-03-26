@@ -9,3 +9,10 @@ parameters:
   directoryPerms: "700"
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
+
+
+# Amazon Elastic File System (EFS) = managed AWS service 
+# It is basically NFS as a service = NFS is a protocol that allows multiple clients to access the same files over a network. 
+# NFS is a protocol in efs but EFS is a managed service that provides NFS functionality.
+# EFS is a shared file system that can be mounted on multiple EC2 instances (or in this case, Kubernetes nodes) at the same time. It provides a scalable and elastic storage solution for applications that require shared access to files.
+# EFS is designed to be highly available and durable, with data stored across multiple Availability Zones

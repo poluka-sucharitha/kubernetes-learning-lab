@@ -225,3 +225,5 @@ Typical paths include:
 Simple Definition
 
 Ephemeral storage is temporary node-local storage used by containers for writable layers, logs, and temporary volumes, and it is deleted when the pod terminates.
+
+
