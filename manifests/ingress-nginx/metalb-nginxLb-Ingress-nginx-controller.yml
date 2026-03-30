@@ -1,0 +1,29 @@
+# with this we r installing ingress-nginx controller in our kind cluster. This will create a LoadBalancer type service for the ingress-nginx controller. 
+# In kind, since we don't have a real cloud provider to provision an actual load balancer, it uses a workaround to expose the service on a specific port on the localhost of the machine where kind is running.
+#  This allows us to access the ingress-nginx controller from outside the cluster using localhost and the assigned port.
+
+
+
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+kubectl get pods -n metallb-system
+
+kubectl apply -f metallb.yaml
+
+kubectl create deployment nginx --image=nginx
+kubectl get pods
+kubectl expose deployment nginx --type=LoadBalancer --port=80 --target-port=80
+kubectl get svc
+kubectl get svc nginx
+curl http://<EXTERNAL-IP>
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+kubectl get pods -n ingress-nginx -n ingress-nginx
+kubectl get svc -n ingress-nginx -n ingress-nginx
+kubectl get svc ingress-nginx-controller -n ingress-nginx
+
+
+
+1. the above commnds install metaLB to assign external IPs to services of type LoadBalancer in our kind cluster, then we create a deployment and a service of type LoadBalancer for nginx and we can access it using the assigned external IP. 
+Finally, we install ingress-nginx controller in our kind cluster and we can see the service of type LoadBalancer created for the ingress-nginx controller.
+2. the above command creates a deployment and a service of type LoadBalancer for nginx
+3. the above command installs ingress-nginx controller in kind cluster and we can see the service of type LoadBalancer created for the ingress-nginx controller.

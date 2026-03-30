@@ -1,0 +1,20 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-frontend-to-orders
+  namespace: shop
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: orders
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: frontend
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+  egress:
+    - toEntities:
+        - cluster
