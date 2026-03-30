@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: shop-gateway
+  namespace: shop
+  labels:
+    app.kubernetes.io/name: shop-gateway
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: shop-demo
+spec:
+  selector:
+    istio: ingressgateway # Use Istio's built-in ingress gateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "shop.local"  # this should be same as the actual host we will use to access the application. we can add this to our /etc/hosts file to point to the ingress gateway's IP address.

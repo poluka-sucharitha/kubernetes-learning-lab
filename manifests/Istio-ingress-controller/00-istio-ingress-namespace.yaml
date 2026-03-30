@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-ingress
+  labels:
+    istio-injection: enabled  # This label is used to enable automatic sidecar injection for the istio-ingress namespace. When this label is present, Istio will automatically inject the Envoy sidecar proxy into any pods created in this namespace. This allows the ingress controller to take advantage of Istio's traffic management, security, and observability features without requiring manual configuration for each pod. By enabling automatic sidecar injection, we can ensure that all components of the ingress controller are properly integrated with Istio and can benefit from its capabilities.
+

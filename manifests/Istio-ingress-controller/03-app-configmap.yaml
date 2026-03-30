@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-config
+  namespace: shop
+data:
+  APP_MODE: "demo"
+  APP_MESSAGE: "orders service configmap"
