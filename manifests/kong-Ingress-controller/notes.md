@@ -519,3 +519,17 @@ Kong Gateway + HTTPRoute enables path routing, blue/green deployment, and canary
 ```
 ```
 
+
+###Namespace used for diffferent levels###
+
+Client
+   ↓
+MetalLB (metallb-system)
+   ↓
+Kong Gateway (kong)
+   ↓
+HTTPRoute (shop-kong)
+   ↓
+Service (shop-kong)
+   ↓
+Pod (shop-kong)
