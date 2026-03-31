@@ -1,0 +1,29 @@
+# This pod is used for:
+# - curl
+# - nslookup
+# - Google egress test
+# - internal connectivity test
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: toolbox
+  namespace: mesh-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: toolbox
+  template:
+    metadata:
+      labels:
+        app: toolbox
+    spec:
+      serviceAccountName: app-reader
+      containers:
+        - name: toolbox
+          image: curlimages/curl:8.7.1
+          command: ["/bin/sh", "-c"]
+          args:
+            - "sleep 36000"

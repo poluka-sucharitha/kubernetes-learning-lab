@@ -1,0 +1,16 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: toolbox-google-egress
+  namespace: mesh-lab
+spec:
+  endpointSelector:
+    matchLabels:
+      app: toolbox
+  egress:
+    - toFQDNs:
+        - matchName: www.google.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

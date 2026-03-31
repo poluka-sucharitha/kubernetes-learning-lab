@@ -1,0 +1,8 @@
+#Create application namespace with Istio injection
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mesh-lab
+  labels:
+    istio-injection: enabled

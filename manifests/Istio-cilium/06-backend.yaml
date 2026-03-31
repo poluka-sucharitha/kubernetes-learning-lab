@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mesh-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: v1
+    spec:
+      serviceAccountName: app-reader
+      containers:
+        - name: backend
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=backend-v1"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: BACKEND_MESSAGE
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: app-storage
+              mountPath: /data
+      volumes:
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: mesh-lab-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: mesh-lab
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

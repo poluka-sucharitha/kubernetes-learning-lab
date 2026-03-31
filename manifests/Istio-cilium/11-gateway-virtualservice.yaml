@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: mesh-lab-gateway
+  namespace: mesh-lab
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "frontend.local"
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: frontend-vs
+  namespace: mesh-lab
+spec:
+  hosts:
+    - "frontend.local"
+  gateways:
+    - mesh-lab-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: frontend.mesh-lab.svc.cluster.local
+            subset: blue
+            port:
+              number: 8080
+          weight: 100
+        - destination:
+            host: frontend.mesh-lab.svc.cluster.local
+            subset: green
+            port:
+              number: 8080
+          weight: 0

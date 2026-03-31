@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: mesh-lab
+data:
+  FRONTEND_MESSAGE: "Hello from frontend using ConfigMap"
+  BACKEND_MESSAGE: "Hello from backend using ConfigMap"

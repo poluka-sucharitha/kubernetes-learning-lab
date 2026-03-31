@@ -1,0 +1,12 @@
+#this allows only pod to pod communications happens only through http and https protocols. 
+#This is a very strict policy and it will block all other types of traffic. 
+#This is a good way to enforce security in the cluster. However, it can also cause issues if you have applications that need to communicate using other protocols. In such cases, you can use a more relaxed policy that allows other types of traffic as well.
+
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: mesh-lab
+spec:
+  mtls:
+    mode: STRICT

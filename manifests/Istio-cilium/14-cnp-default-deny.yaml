@@ -1,0 +1,11 @@
+# Now traffic in mesh-lab is denied unless allowed by other policies.
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny
+  namespace: mesh-lab
+spec:
+  endpointSelector: {}
+  ingress: []
+  egress: []

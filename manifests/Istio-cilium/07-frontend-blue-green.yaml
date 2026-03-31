@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-blue
+  namespace: mesh-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: blue
+    spec:
+      serviceAccountName: app-reader
+      containers:
+        - name: frontend
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=frontend-blue"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: FRONTEND_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: FRONTEND_MESSAGE
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-green
+  namespace: mesh-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+      version: green
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: green
+    spec:
+      serviceAccountName: app-reader
+      containers:
+        - name: frontend
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=frontend-green"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+           
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: mesh-lab
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
