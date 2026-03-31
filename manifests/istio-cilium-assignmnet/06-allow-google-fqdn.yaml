@@ -1,0 +1,14 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-google-fqdn
+  namespace: security-lab
+spec:
+  endpointSelector: {}
+  egress:
+    - toFQDNs:
+        - matchName: www.google.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

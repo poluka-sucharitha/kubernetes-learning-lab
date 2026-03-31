@@ -1,0 +1,8 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: security-lab
+spec:
+  endpointSelector: {}
+  egress: []
