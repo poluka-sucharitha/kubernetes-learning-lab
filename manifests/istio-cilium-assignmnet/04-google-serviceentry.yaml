@@ -12,3 +12,14 @@ spec:
       protocol: HTTPS
   resolution: DNS
   location: MESH_EXTERNAL
+
+
+#  Pod
+#  ↓
+# Envoy (Istio sidecar)
+#  ↓
+# (ServiceEntry check)
+#  ↓
+# Cilium policy check
+#  ↓
+# Internet (Google)

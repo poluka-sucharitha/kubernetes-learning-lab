@@ -19,3 +19,8 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+
+
+# # In Cilium, DNS resolution is treated as network traffic. 
+# When using a default deny policy, DNS queries are also blocked. 
+# So we must explicitly allow traffic to kube-dns on port 53 and optionally restrict which domain names can be resolved using L7 DNS rules.
