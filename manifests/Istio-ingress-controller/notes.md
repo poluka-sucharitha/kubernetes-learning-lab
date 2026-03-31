@@ -414,3 +414,21 @@ Service → forwards to pod
 ```text
 Istio Gateway handles incoming traffic entry, VirtualService routes traffic to services, and Kubernetes services forward traffic to pods.
 
+
+
+Namespace used at differnet levels:
+===================================
+
+Client
+   ↓
+MetalLB (metallb-system)
+   ↓
+Istio Ingress Gateway (istio-system)
+   ↓
+Gateway (istio-system or app namespace)
+   ↓
+VirtualService (shop namespace)
+   ↓
+Service (shop namespace)
+   ↓
+Pod (with Envoy sidecar)
