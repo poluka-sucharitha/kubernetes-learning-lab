@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-toolbox-to-backend
+  namespace: mesh-lab
+spec:
+  endpointSelector:
+    matchLabels:
+      app: backend
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: mesh-lab
+            app: toolbox
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP

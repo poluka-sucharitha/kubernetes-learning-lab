@@ -34,10 +34,10 @@ spec:
             subset: blue
             port:
               number: 8080
-          weight: 100
+          weight: 50
         - destination:
             host: frontend.mesh-lab.svc.cluster.local
             subset: green
             port:
               number: 8080
-          weight: 0
+          weight: 50

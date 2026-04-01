@@ -1,3 +1,5 @@
+
+apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-istio-ingress-to-frontend

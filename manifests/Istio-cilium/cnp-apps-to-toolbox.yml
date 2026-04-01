@@ -1,0 +1,24 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-apps-to-toolbox
+  namespace: mesh-lab
+spec:
+  endpointSelector:
+    matchLabels:
+      app: toolbox
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: frontend
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            app: backend 
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
