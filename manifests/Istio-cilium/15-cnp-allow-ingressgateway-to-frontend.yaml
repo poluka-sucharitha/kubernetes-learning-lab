@@ -1,0 +1,17 @@
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-istio-ingress-to-frontend
+  namespace: mesh-lab
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: istio-system
+            istio: ingressgateway
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
