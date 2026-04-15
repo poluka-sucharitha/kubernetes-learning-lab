@@ -1049,5 +1049,4 @@ Use these in your 3 YOE resume under DevOps/GitOps:
 5. Add a Helm chart-based application
 6. Set up App of Apps so all your apps are managed through Git
 
----
-*Lab built for 3 YOE DevOps — production patterns, real manifests, resume-ready*
+
