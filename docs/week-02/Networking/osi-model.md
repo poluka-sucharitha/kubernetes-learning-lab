@@ -1,9 +1,8 @@
-OSI Model (Networking Basics)
+# OSI Model (Networking Basics)
 
-The OSI (Open Systems Interconnection) Model explains how network communication happens by dividing it into 7 layers.
+The **OSI (Open Systems Interconnection) Model** explains how network communication happens by dividing it into **7 layers**. Each layer has a specific responsibility in sending data from one computer to another.
 
-Each layer has a specific responsibility in sending data from one computer to another.
-
+```
 7  Application
 6  Presentation
 5  Session
@@ -11,216 +10,213 @@ Each layer has a specific responsibility in sending data from one computer to an
 3  Network
 2  Data Link
 1  Physical
-Easy Way to Remember
-All People Seem To Need Data Processing
-OSI Layers Overview
-Layer	Name	What It Does	Example
-7	Application	User-level network communication	HTTP, DNS
-6	Presentation	Data encryption & formatting	TLS/SSL
-5	Session	Maintains connection sessions	Login session
-4	Transport	Application communication via ports	TCP, UDP
-3	Network	Packet routing using IP	IP address
-2	Data Link	Communication inside local network	MAC address
-1	Physical	Transmits bits through hardware	cables, wifi
-Layer-by-Layer Explanation
-7️⃣ Application Layer
+```
 
-The Application Layer is where applications communicate with the network.
+> **Easy Way to Remember:** All People Seem To Need Data Processing
 
-It defines protocols used by applications.
+---
 
-Examples:
+## OSI Layers Overview
 
-HTTP
-HTTPS
-DNS
-FTP
-SMTP
+| Layer | Name         | What It Does                          | Example              |
+|-------|--------------|---------------------------------------|----------------------|
+| 7     | Application  | User-level network communication      | HTTP, DNS            |
+| 6     | Presentation | Data encryption & formatting          | TLS/SSL              |
+| 5     | Session      | Maintains connection sessions         | Login session        |
+| 4     | Transport    | Application communication via ports   | TCP, UDP             |
+| 3     | Network      | Packet routing using IP               | IP address           |
+| 2     | Data Link    | Communication inside local network    | MAC address          |
+| 1     | Physical     | Transmits bits through hardware       | Cables, WiFi         |
 
-Example request:
+---
 
-GET /products
+## Layer-by-Layer Explanation
+
+### 7️⃣ Application Layer
+
+The Application Layer is where **applications communicate with the network**. It defines the protocols used by applications.
+
+**Protocols:** HTTP, HTTPS, DNS, FTP, SMTP
+
+**Example requests:**
+```
+GET  /products
 POST /login
+```
 
-Example:
+> Opening a website in your browser.
 
-Opening a website in your browser.
+---
 
-6️⃣ Presentation Layer
+### 6️⃣ Presentation Layer
 
-The Presentation Layer formats and encrypts data before transmission.
+The Presentation Layer **formats and encrypts data** before transmission.
 
-Responsibilities:
+**Responsibilities:**
+- Encryption
+- Compression
+- Data formatting
 
-encryption
+**Protocol:** TLS/SSL (HTTPS encryption)
 
-compression
+> Browser encrypts data before sending it to a website.
 
-data formatting
+---
 
-Example:
+### 5️⃣ Session Layer
 
-HTTPS encryption (TLS/SSL)
+The Session Layer **manages sessions** between two communicating systems.
 
-Example:
+**Responsibilities:**
+- Establish session
+- Maintain session
+- Terminate session
 
-Browser encrypts data before sending it to a website.
-5️⃣ Session Layer
+**Examples:**
+- User login session
+- Database connection session
+- Video call session
 
-The Session Layer manages sessions between two communicating systems.
+> User logs into a website and remains authenticated throughout.
 
-Responsibilities:
+---
 
-establish session
+### 4️⃣ Transport Layer
 
-maintain session
+The Transport Layer controls **communication between applications using ports**.
 
-terminate session
+**Protocols:** TCP, UDP
 
-Example:
+```
+192.168.1.50:80      ← port 80 = HTTP
+192.168.1.50:3306    ← port 3306 = MySQL
+```
 
-User login session
-Database connection session
-Video call session
+> **IP → identifies the machine | Port → identifies the application**
 
-Example:
+**Common ports:**
 
-User logs into a website and remains authenticated.
-4️⃣ Transport Layer
+| Service | Port |
+|---------|------|
+| HTTP    | 80   |
+| HTTPS   | 443  |
+| SSH     | 22   |
+| MySQL   | 3306 |
 
-The Transport Layer controls communication between applications using ports.
-
-Protocols:
-
-TCP
-UDP
-
-Example:
-
-192.168.1.50:80
-192.168.1.50:3306
-
-Meaning:
-
-IP → machine
-Port → application
-
-Example services:
-
-Service	Port
-HTTP	80
-HTTPS	443
-SSH	22
-MySQL	3306
-
-Example:
-
+```
 Browser → Server:443 (HTTPS)
-3️⃣ Network Layer
+```
 
-The Network Layer is responsible for routing packets using IP addresses.
+---
 
-Responsibilities:
+### 3️⃣ Network Layer
 
-IP addressing
+The Network Layer is responsible for **routing packets using IP addresses**.
 
-packet routing
+**Responsibilities:**
+- IP addressing
+- Packet routing
+- Path determination
 
-path determination
-
-Example:
-
-192.168.1.10 → 192.168.1.50
-
-Example command:
-
+```bash
 ping 8.8.8.8
+```
 
-Example in Kubernetes:
+```
+192.168.1.10  ─────►  192.168.1.50
+```
 
-Pod A → Pod B
-2️⃣ Data Link Layer
+**In Kubernetes:**
+```
+Pod A  ─────►  Pod B   (L3 communication)
+```
 
-The Data Link Layer handles communication within the same local network.
+---
 
-It uses MAC addresses.
+### 2️⃣ Data Link Layer
 
-Example MAC address:
+The Data Link Layer handles **communication within the same local network** using MAC addresses.
 
+**Example MAC address:**
+```
 00:1A:2B:3C:4D:5E
+```
 
-Example devices:
+**Protocols:** Ethernet, ARP
 
+**Example devices:**
+```
 Laptop → Switch
 Server → Router
+```
 
-Protocols:
+> Your laptop sends a packet to your home router using MAC addressing.
 
-Ethernet
-ARP
+---
 
-Example:
+### 1️⃣ Physical Layer
 
-Your laptop sends a packet to your home router.
-1️⃣ Physical Layer
+The Physical Layer **transmits raw bits through hardware**.
 
-The Physical Layer transmits raw bits through hardware.
+**Examples:**
+- Ethernet cable
+- Fiber optic cable
+- WiFi signals
+- Network cards
 
-Examples:
+```
+Data transmitted: 0s and 1s
+```
 
-Ethernet cable
-Fiber optic cable
-WiFi signals
-Network cards
+> Electrical signals traveling through a network cable.
 
-Data transmitted:
+---
 
-0s and 1s
+## How All Layers Work Together
 
-Example:
+When you open `https://google.com`, all layers work like this:
 
-Electrical signals traveling through a network cable.
-How All Layers Work Together (Example)
+| Layer | What Happens                            |
+|-------|-----------------------------------------|
+| 7 — Application  | Browser sends HTTP request     |
+| 6 — Presentation | Data encrypted using TLS       |
+| 5 — Session      | Session established            |
+| 4 — Transport    | TCP connection created         |
+| 3 — Network      | Packet routed using IP         |
+| 2 — Data Link    | MAC address used inside LAN    |
+| 1 — Physical     | Data transmitted via cable/WiFi|
 
-When you open a website:
+---
 
-https://google.com
+## Important Layers for DevOps / Kubernetes
 
-The layers work like this:
+In cloud and Kubernetes networking, we mainly deal with three layers:
 
-Layer	What Happens
-Application	Browser sends HTTP request
-Presentation	Data encrypted using TLS
-Session	Session established
-Transport	TCP connection created
-Network	Packet routed using IP
-Data Link	MAC address used inside LAN
-Physical	Data transmitted through cable/WiFi
-Important Layers for DevOps / Kubernetes
+| Layer | Role in Kubernetes          | Example                  |
+|-------|-----------------------------|--------------------------|
+| L3    | Pod IP communication        | Pod A → Pod B via IP     |
+| L4    | Service port routing        | Service:80 → Pod:8080    |
+| L7    | Ingress HTTP routing        | /products, /login paths  |
 
-In cloud and Kubernetes networking, we mainly deal with:
-
-Layer	Example
-L3	Pod IP communication
-L4	Service port routing
-L7	Ingress HTTP routing
-
-Example flow:
-
+**Example flow:**
+```
 Client
- ↓
-Ingress (L7)
- ↓
-Service (L4)
- ↓
-Pod IP (L3)
-Quick Interview Summary
-Layer 3 → IP communication between hosts
-Layer 4 → Port communication between applications
-Layer 7 → Application-level communication (HTTP, APIs)
+  ↓
+Ingress (L7)   ← routes by HTTP path
+  ↓
+Service (L4)   ← routes by port
+  ↓
+Pod IP (L3)    ← routes by IP
+```
 
-Example:
+---
 
-ping → Layer 3
-curl → Layer 4
-HTTP API → Layer 7
+## Quick Interview Summary
+
+| Layer | What it handles                        | Example        |
+|-------|----------------------------------------|----------------|
+| L3    | IP communication between hosts         | `ping 8.8.8.8` |
+| L4    | Port communication between applications| `curl :443`    |
+| L7    | Application-level (HTTP, APIs)         | REST API call  |
+
+> `ping` → Layer 3 | `curl` → Layer 4 | `HTTP API` → Layer 7
