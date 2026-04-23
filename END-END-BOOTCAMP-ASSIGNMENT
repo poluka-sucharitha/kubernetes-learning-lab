@@ -1,0 +1,30 @@
+kubernetes sample project assignment: 
+
+1. Create a managed Kubernetes cluster
+2. Configure networking, IAM, RBAC, and autoscaling
+3. Set up GitOps using Argo CD
+4. Organize repo structure for infra and applications
+5. Deploy all platform tools via Argo CD
+6. Install and configure  Istio for service mesh
+7. Configure gateways, virtual services, and mTLS
+8. install Kyverno for policy enforcement
+9. Create and test network policies to restrict cross namespace communication 
+10. Deploy Prometheus for metrics collection
+11. Deploy Grafana for dashboards
+12. Configure alerts and monitoring dashboards
+13. Deploy HashiCorp for secret management
+14. Integrate Vault with Kubernetes authentication,Configure External Secrets to fetch secrets securely
+15. Use secrets in application pods without hardcoding
+16. install Velero
+Configure backup storage and schedules
+Perform namespace backup and restore testing
+17.deploy sample application
+Implement canary rollout using Istio traffic routing
+18.Gradually shift traffic and validate deployment
+19.Review release notes for all tools before upgrade
+Identify breaking changes and compatibility issues
+Perform upgrades via GitOps (Argo CD)
+20.Monitor system using Prometheus and Grafana during upgrades
+21.Validate application and platform health post-upgrade
+D
+22.Document architecture, workflows, and upgrade strategy
